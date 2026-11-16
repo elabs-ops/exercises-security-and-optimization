@@ -1,0 +1,23 @@
+FROM ubuntu:24.04
+
+WORKDIR /myapp
+
+RUN useradd -m appuser
+
+RUN apt-get update && apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -&& apt-get install -y nodejs
+
+COPY --chown=appuser:appuser code/example-frontend .
+RUN chown appuser:appuser /myapp
+
+RUN npm install && npm run build && npm install -g serve
+
+USER appuser
+
+ENV PORT=5001
+ARG REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost:8080}
+
+EXPOSE $PORT
+
+CMD ["serve", "-s", "-l", "5001", "build"]

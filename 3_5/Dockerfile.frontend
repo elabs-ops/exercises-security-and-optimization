@@ -10,13 +10,18 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -&& apt-get install 
 COPY --chown=appuser:appuser code/example-frontend .
 RUN chown appuser:appuser /myapp
 
+# ==================================================================
+# CRITICAL: React injects REACT_APP_ variables strictly at compile-time.
+# These environment variables MUST be declared BEFORE executing 'npm run build',
+# otherwise the static build will fallback to requesting localhost:5001.
+# ==================================================================
+ENV PORT=5001
+ARG REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_URL=http://localhost:8080
+
 RUN npm install && npm run build && npm install -g serve
 
 USER appuser
-
-ENV PORT=5001
-ARG REACT_APP_BACKEND_URL
-ENV REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost:8080}
 
 EXPOSE $PORT
 

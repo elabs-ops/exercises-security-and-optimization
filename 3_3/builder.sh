@@ -9,15 +9,18 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ENV_PATH="$SCRIPT_DIR/../.env"
 
-if [ ! -f "$ENV_PATH" ]; then
-  echo "Error: .env file not found at $ENV_PATH" >&2
-  exit 1
+# if [ ! -f "$ENV_PATH" ]; then
+#   echo "Error: .env file not found at $ENV_PATH" >&2
+#   exit 1
+# fi
+
+# # Load environment variables
+# # with bash use source $ENV_PATH
+# . "$ENV_PATH"
+
+if [ -f "$ENV_PATH" ]; then
+  . "$ENV_PATH"
 fi
-
-# Load environment variables
-# with bash use source $ENV_PATH
-. "$ENV_PATH"
-
 
 # Validate required CLI dependencies
 command -v git >/dev/null 2>&1 || { echo "Error: git is required but missing." >&2; exit 1; }
@@ -53,10 +56,20 @@ fi
 
 # Authenticate with Docker Hub if not already logged in as the correct user
 echo "Checking Docker Hub authentication status..."
-if docker info 2>/dev/null | grep -q "Username: $DOCKER_USER"; then
+
+# if docker info 2>/dev/null | grep -q "Username: $DOCKER_USER"; then
+#   echo "Already authenticated as $DOCKER_USER. Skipping login."
+# else
+#   echo "Not authenticated as $DOCKER_USER. Initiating login..."
+#   echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USER" --password-stdin
+# fi
+
+IS_AUTH=$(docker info 2>/dev/null | grep "Username: ${DOCKER_USER:-}" || true)
+
+if [ -n "$IS_AUTH" ]; then
   echo "Already authenticated as $DOCKER_USER. Skipping login."
 else
-  echo "Not authenticated as $DOCKER_USER. Initiating login..."
+  echo "Not authenticated. Initiating login..."
   echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USER" --password-stdin
 fi
 

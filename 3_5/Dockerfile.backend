@@ -6,14 +6,14 @@ RUN useradd -m appuser
 
 COPY code/example-backend .
 
+ENV PORT=8080
+ENV REQUEST_ORIGIN=http://localhost:5001
+
 RUN go build -o server .
 
 RUN chown appuser:appuser server
 
 USER appuser
-
-ENV PORT=8080
-ENV REQUEST_ORIGIN=http://localhost:5001
 
 EXPOSE $PORT
 

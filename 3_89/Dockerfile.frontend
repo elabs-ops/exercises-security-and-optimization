@@ -1,0 +1,28 @@
+FROM node:16-alpine AS builder
+
+WORKDIR /myapp
+
+COPY code/example-frontend .
+
+ARG REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_URL=http://localhost:8080
+
+RUN npm install && npm run build
+
+
+FROM node:16-alpine
+
+WORKDIR /usr/app
+
+RUN adduser -D appuser && \
+    npm install -g serve && \
+    npm cache clean --force
+
+COPY --from=builder --chown=appuser:appuser /myapp/build ./build
+
+USER appuser
+
+ENV PORT=5001
+EXPOSE $PORT
+
+CMD ["serve", "-s", "-l", "5001", "build"]

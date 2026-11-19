@@ -9,8 +9,6 @@ RUN adduser -D appuser
 
 COPY code/example-backend .
 
-ENV REQUEST_ORIGIN=http://localhost:5001
-
 RUN go build -o server .
 
 
@@ -21,12 +19,13 @@ WORKDIR /app
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
 COPY --from=builder --chown=1000:1000 /app/server ./server
 
 USER 1000
 
 ENV PORT=8080
+ENV REQUEST_ORIGIN=http://localhost:5001
+
 EXPOSE $PORT
 
 CMD ["./server"]
